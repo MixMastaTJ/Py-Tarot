@@ -10,6 +10,6 @@ Planned features:
 
 Rider-Waite images illustrated by Pamela Colman Smith and in the public domain, sourced from Wikimedia Commons.
 
-All code where applicable is covered by the GPLv3 liscense.
+All code where applicable is covered by the GPLv3 license.
 
-Any original artwork or text liscensed under CC0 where not otherwise specified.
+Any original artwork or text licensed under CC0 where not otherwise specified.
