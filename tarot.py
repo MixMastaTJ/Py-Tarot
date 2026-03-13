@@ -1,6 +1,87 @@
 import sys, math, random, logging
 from PySide6 import Qt, QtCore, QtWidgets, QtGui
 
+CardDictionary = {
+	'Major01' : "I: The Magician",
+	'Major02' : "II: The High Priestess",
+	'Major03' : "III: The Empress",
+	'Major04' : "IV: The Emperor",
+	'Major05' : "V: The Hierophant",
+	'Major06' : "VI: The Lovers",
+	'Major07' : "VII: The Chariot",
+	'Major08' : "VIII: Strength",
+	'Major09' : "IX: The Hermit",
+	'Major10' : "X: Wheel of Fortune",
+	'Major11' : "XI: Justice",
+	'Major12' : "XII: The Hanged Man",
+	'Major13' : "XIII: Death",
+	'Major14' : "XIV: Temperance",
+	'Major15' : "XV: The Devil",
+	'Major16' : "XVI: The Tower",
+	'Major17' : "XVII: The Star",
+	'Major18' : "XVIII: The Moon",
+	'Major19' : "XIX: The Sun",
+	'Major20' : "XX: Judgement",
+	'Major21' : "XXI: The World",
+	'Major00' : "0: The Fool",
+	'Cups01' : "Ace of Cups",
+	'Cups02' : "Two of Cups",
+	'Cups03' : "Three of Cups",
+	'Cups04' : "Four of Cups",
+	'Cups05' : "Five of Cups",
+	'Cups06' : "Six of Cups",
+	'Cups07' : "Seven of Cups",
+	'Cups08' : "Eight of Cups",
+	'Cups09' : "Nine of Cups",
+	'Cups10' : "Ten of Cups",
+	'Cups11' : "Page of Cups",
+	'Cups12' : "Knight of Cups",
+	'Cups13' : "Queen of Cups",
+	'Cups14' : "King of Cups",
+	'Wands01': "Ace of Wands",
+	'Wands02': "Two of Wands",
+	'Wands03': "Three of Wands",
+	'Wands04': "Four of Wands",
+	'Wands05': "Five of Wands",
+	'Wands06': "Six of Wands",
+	'Wands07': "Seven of Wands",
+	'Wands08': "Eight of Wands",
+	'Wands09': "Nine of Wands",
+	'Wands10': "Ten of Wands",
+	'Wands11': "Page of Wands",
+	'Wands12': "Knight of Wands",
+	'Wands13': "Queen of Wands",
+	'Wands14': "King of Wands",
+	'Swords01': "Ace of Swords",
+	'Swords02': "Two of Swords",
+	'Swords03': "Three of Swords",
+	'Swords04': "Four of Swords",
+	'Swords05': "Five of Swords",
+	'Swords06': "Six of Swords",
+	'Swords07': "Seven of Swords",
+	'Swords08': "Eight of Swords",
+	'Swords09': "Nine of Swords",
+	'Swords10': "Ten of Swords",
+	'Swords11': "Page of Swords",
+	'Swords12': "Knight of Swords",
+	'Swords13': "Queen of Swords",
+	'Swords14': "King of Swords",
+	'Pents01' : "Ace of Pentacles",
+	'Pents02' : "Two of Pentacles",
+	'Pents03' : "Three of Pentacles",
+	'Pents04' : "Four  of Pentacles",
+	'Pents05' : "Five of Pentacles",
+	'Pents06' : "Six of Pentacles",
+	'Pents07' : "Seven of Pentacles",
+	'Pents08' : "Eight of Pentacles",
+	'Pents09' : "Nine of Pentacles",
+	'Pents10' : "Ten of Pentacles",
+	'Pents11' : "Page of Pentacles",
+	'Pents12' : "Knight of Pentacles",
+	'Pents13' : "Queen of Pentacles",
+	'Pents14' : "King of Pentacles"
+}
+
 class mainWindow(QtWidgets.QWidget):
 	def __init__(self):
 		super().__init__()
@@ -29,7 +110,7 @@ class mainWindow(QtWidgets.QWidget):
 		widget.raise_()
 		return widget
 
-class Deck(QtWidgets.QLabel):
+class Deck(QtWidgets.QWidget):
 	def __init__(self):
 		super().__init__()
 
@@ -103,6 +184,8 @@ class Deck(QtWidgets.QLabel):
 	def mouseReleaseEvent(self, event):
 		if event.button() == QtCore.Qt.LeftButton:
 			self._drag_start = None
+		elif event.button() == QtCore.Qt.RightButton:
+			self.contextMenu(event.position().toPoint())
 
 	def replace(self, card):
 	#Destroy "card" and add its value to contents
@@ -139,7 +222,61 @@ class Deck(QtWidgets.QLabel):
 
 		painter.drawPixmap(int(img_x), int(img_y), pixmap)
 
-class Card(QtWidgets.QLabel):
+	def contextMenu(self, position):
+		menu = QtWidgets.QMenu(self)
+		menu.addAction("Shuffle", self.shuffle())
+
+		selectionMenu = QtWidgets.QMenu("Pull Card", self)
+		majorMenu = QtWidgets.QMenu("Major Arcana", self)
+		cupsMenu = QtWidgets.QMenu("Cups", self)
+		pentsMenu = QtWidgets.QMenu("Pentacles", self)
+		swordsMenu = QtWidgets.QMenu("Swords", self)
+		wandsMenu = QtWidgets.QMenu("Wands", self)
+
+		cloneCont = sorted(self.contents, key=lambda x: x[1:] if x.startswith("!") else x)
+		for item in cloneCont:
+			if item[0] == "!":
+				cleanItem = item[1:]
+			else:
+				cleanItem = item
+
+			if item.find("Wands") != -1:
+				wandsMenu.addAction(CardDictionary.get(cleanItem), lambda i=item:self.pullCard(i))
+			elif item.find("Cups") != -1:
+				cupsMenu.addAction(CardDictionary.get(cleanItem), lambda i=item:self.pullCard(i))
+			elif item.find("Pents") != -1:
+				pentsMenu.addAction(CardDictionary.get(cleanItem), lambda i=item:self.pullCard(i))
+			elif item.find("Swords") != -1:
+				swordsMenu.addAction(CardDictionary.get(cleanItem), lambda i=item:self.pullCard(i))
+			else:
+				majorMenu.addAction(CardDictionary.get(cleanItem), lambda i=item:self.pullCard(i))
+
+		selectionMenu.addMenu(majorMenu)
+		selectionMenu.addMenu(cupsMenu)
+		selectionMenu.addMenu(pentsMenu)
+		selectionMenu.addMenu(swordsMenu)
+		selectionMenu.addMenu(wandsMenu)
+
+		menu.addMenu(selectionMenu)
+
+		menu.exec(self.mapToGlobal(position))
+
+	#Remove specific card from contents and spawn card face up
+	def pullCard(self, cardName):
+		self.contents.remove(cardName)
+		if cardName[0] == "!":
+			cardName = cardName[1:]
+		parPos =  self.mapToParent(self.pos())
+		newCard = self.parentWidget().addWidget(Card(cardName), self.x()+self.width(), self.y())
+		newCard.flip()
+		self.update()
+
+	#Return all cards from table to deck then shuffle
+	def resetDeck(self):
+
+		pass
+
+class Card(QtWidgets.QWidget):
 	def __init__(self, name):
 		super().__init__()
 		self.name = name
