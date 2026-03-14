@@ -8,7 +8,9 @@ Planned features:
 
 -Helper pop up for card divinatory meanings
 
-Rider-Waite images illustrated by Pamela Colman Smith and in the public domain, sourced from Wikimedia Commons.
+Rider-Waite Tarot images illustrated by Pamela Colman Smith and in the public domain, sourced from Wikimedia Commons.
+
+Divinatory meanings and reading methods written by Arthur Edward Waite. Qabalistic interpretations written by Aleister Crowley.
 
 All code where applicable is covered by the GPLv3 license.
 

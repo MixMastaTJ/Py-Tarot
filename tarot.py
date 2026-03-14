@@ -1,4 +1,4 @@
-import sys, math, random, logging
+import sys, math, random, logging, pathlib
 from PySide6 import Qt, QtCore, QtWidgets, QtGui
 
 CardDictionary = {
@@ -94,7 +94,7 @@ class mainWindow(QtWidgets.QWidget):
 
 	def resizeEvent(self, event):
 		super().resizeEvent(event)
-		
+
 		self._current_scale = event.size().height() / self._base_size.height()
 
 		for child in self.children():
@@ -133,8 +133,8 @@ class Deck(QtWidgets.QWidget):
 		'Pents06', 'Pents07', 'Pents08', 'Pents09', 'Pents10',
 		'Pents11', 'Pents12', 'Pents13', 'Pents14']
 
-		self.deckImage = QtGui.QImage("Tarot_Image/Deck.png")
-		self.deckEmptyImage = QtGui.QImage("Tarot_Image/DeckEmpty.png")
+		self.deckImage = QtGui.QImage(pathlib.Path(__file__).parent/"Tarot_Image/Deck.png")
+		self.deckEmptyImage = QtGui.QImage(pathlib.Path(__file__).parent/"Tarot_Image/DeckEmpty.png")
 		self._base_img_w = self.deckImage.width()
 		self._base_img_h = self.deckImage.height()
 
@@ -159,7 +159,7 @@ class Deck(QtWidgets.QWidget):
 		#new_x = int(self.x() * scale)
 		#new_y = int(self.y() * scale)
 		#self.move(new_x, new_y)
-		
+
 		self.update()
 
 	#Draw a card on double click
@@ -169,7 +169,7 @@ class Deck(QtWidgets.QWidget):
 				parPos =  self.mapToParent(self.pos())
 				self.parentWidget().addWidget(Card(self.contents.pop(0)), self.x()+self.width(), self.y())
 				self.update()
-	
+
 	#Drag deck if clicked and dragged (next 3 methods)
 	def mousePressEvent(self, event):
 		if event.button() == QtCore.Qt.LeftButton:
@@ -197,7 +197,7 @@ class Deck(QtWidgets.QWidget):
 
 	def shuffle(self):
 	#Randomize indexing of contents
-		tempList = []		
+		tempList = []
 		for item in self.contents:
 			i = random.randint(0, len(tempList))
 			if (random.randint(0, 100) < 49):
@@ -216,7 +216,7 @@ class Deck(QtWidgets.QWidget):
 		painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
 
 		cx, cy = self.width() / 2, self.height() / 2
-		
+
 		img_x = (self.width() - pixmap.width())/2
 		img_y = (self.height() - pixmap.height()) / 2
 
@@ -286,8 +286,8 @@ class Card(QtWidgets.QWidget):
 		else:
 			self._rotation = 0
 
-		self.backImage = QtGui.QImage("Tarot_Image/Back.png")
-		self.faceImage = QtGui.QImage("Tarot_Image/" + self.name + ".png")
+		self.backImage = QtGui.QImage(pathlib.Path(__file__).parent/"Tarot_Image/Back.png")
+		self.faceImage = QtGui.QImage(pathlib.Path(__file__).parent/("Tarot_Image/" + self.name + ".png"))
 
 		self.facing = 0
 		#self.setPixmap(QtGui.QPixmap.fromImage(self.backImage))
@@ -313,7 +313,7 @@ class Card(QtWidgets.QWidget):
 		#new_x = int(self.x() * scale * (9/2))
 		#new_y = int(self.y() * scale * (9/2))
 		#self.move(new_x, new_y)
-		
+
 		self.update()
 
 	def _current_pixmap(self):
@@ -367,7 +367,7 @@ class Card(QtWidgets.QWidget):
 			QtWidgets.QApplication.sendEvent(sibling, new_event)
 			return
 
-		event.ignore()		
+		event.ignore()
 
 	def _check_for_deck(self, event):
 		pos_in_parent = self.mapToParent(event.position().toPoint())
@@ -381,7 +381,7 @@ class Card(QtWidgets.QWidget):
 	def mouseDoubleClickEvent(self, event):
 		if not self._point_in_card(event.position().toPoint()):
 			self._forward_event_to_below(event)
-			return	
+			return
 		if event.button() == QtCore.Qt.LeftButton:
 			self.flip()
 
@@ -397,7 +397,7 @@ class Card(QtWidgets.QWidget):
 		elif event.button() == QtCore.Qt.RightButton:
 			self._rot_start = event.position().toPoint()
 			self._previous_rotation = self._rotation
-			self.raise_()	
+			self.raise_()
 			self.grabMouse()
 
 	def mouseMoveEvent(self, event):
@@ -408,7 +408,7 @@ class Card(QtWidgets.QWidget):
 			center = QtCore.QPointF(self.width()/2, self.height()/2)
 			line_start = QtCore.QLineF(center, self._rot_start)
 			line_current = QtCore.QLineF(center, event.position())
-			delta_angle = line_start.angleTo(line_current)			
+			delta_angle = line_start.angleTo(line_current)
 			self._rotation = (self._previous_rotation - delta_angle) % 360
 			self.update()
 		elif not self._point_in_card(event.position().toPoint()):
@@ -420,9 +420,13 @@ class Card(QtWidgets.QWidget):
 			self._drag_start = None
 			self._check_for_deck(event)
 		elif event.button() == QtCore.Qt.RightButton:
+			if (self._rot_start == event.position()):
+				self.divWindow = DivinatoryWindow(self.name)
+				self.divWindow.resize(500,500)
+				self.divWindow.show()
 			self._rot_start = None
 		self.releaseMouse()
-	
+
 	def paintEvent(self, event):
 		pixmap = self._current_pixmap()
 		painter =  QtGui.QPainter(self)
@@ -430,7 +434,7 @@ class Card(QtWidgets.QWidget):
 		painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
 
 		cx, cy = self.width() / 2, self.height() / 2
-		
+
 		img_x = (self.width() - pixmap.width())/2
 		img_y = (self.height() - pixmap.height()) / 2
 
@@ -444,11 +448,45 @@ class Card(QtWidgets.QWidget):
 		self.facing = 1 - self.facing
 		self.update()
 
+class DivinatoryWindow(QtWidgets.QWidget):
+	def __init__(self, name):
+		super().__init__()
+		self.name = name
+		self.setLayout(QtWidgets.QGridLayout())
+
+		cardImage = QtGui.QImage(pathlib.Path(__file__).parent/("Tarot_Image/" + self.name + ".png"))
+		self.imagePixmap = QtGui.QPixmap.fromImage(cardImage)
+		cardLabel = QtWidgets.QLabel()
+		cardLabel.setPixmap(self.imagePixmap.scaled(QtCore.QSize(290, 500),QtCore.Qt.KeepAspectRatio))
+
+		nameLabel = QtWidgets.QLabel()
+		nameLabel.setText(CardDictionary.get(name))
+		nameLabel.setScaledContents(True)
+
+		meanings = open(pathlib.Path(__file__).parent/"meanings.txt")
+		lines = meanings.readlines()
+		meanings.close()
+		self.meaning = ""
+		found = False
+		for line in lines:
+			if found:
+				self.meaning = line[1:-2]
+				break
+			if line.find(name) != -1:
+				found = True
+		meaningField = QtWidgets.QTextEdit()
+		meaningField.setReadOnly(True)
+		meaningField.setText(self.meaning)
+
+		self.layout().addWidget(nameLabel, 1,1,1,-1)
+		self.layout().addWidget(cardLabel,2,1)
+		self.layout().addWidget(meaningField,2,2)
+
 if __name__ == "__main__":
 	app = QtWidgets.QApplication([])
-	
+
 	gameWindow = mainWindow()
-	
+
 	#We will need to set the card and deck size to ~2/9 the screen height assuming oriented in landscape
 	gameWindow.resize(1280,720)
 	gameWindow.show()
